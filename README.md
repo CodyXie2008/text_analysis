@@ -23,6 +23,11 @@ text_analysis/
 │   ├── time_analysis_optimized.py  # 时间分析模块
 │   ├── like_analysis_optimized.py  # 点赞分析模块
 │   └── hit_stopwords.txt           # 停用词文件
+├── algorithms/                     # 统计算法模块
+│   ├── __init__.py                 # 算法模块初始化
+│   ├── normalization.py            # 归一化算法
+│   ├── test_normalization.py       # 归一化测试脚本
+│   └── README_normalization.md     # 归一化使用文档
 ├── docs/                           # 文档目录
 ├── text_analysis_unified.py        # 统一入口点
 ├── utils.py                        # 工具函数
