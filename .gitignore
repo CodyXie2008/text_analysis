@@ -1,0 +1,20 @@
+# Ignore environment files
+.env
+.env.example
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore documentation build files
+docs/_build/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore output files
+*.log
+*.out
+*.pyc
