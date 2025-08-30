@@ -42,12 +42,8 @@ plt.rcParams['axes.unicode_minus'] = False
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# 加载环境变量
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    logger.warning("python-dotenv未安装，无法自动加载.env文件")
+# 导入统一的API管理器
+from text_analysis.core.aliyun_api_manager import get_aliyun_api_manager, is_aliyun_api_available
 
 class DictionaryAnalyzer:
     """本地词典情感分析器"""
@@ -155,165 +151,32 @@ class AliyunAnalyzer:
     """阿里云NLP情感分析器"""
     
     def __init__(self):
-        self.access_key_id = os.getenv('NLP_AK_ENV')
-        self.access_key_secret = os.getenv('NLP_SK_ENV')
-        self.region_id = os.getenv('NLP_REGION_ENV', 'cn-hangzhou')
-        self.endpoint = f"https://nlp.{self.region_id}.aliyuncs.com"
-        
-        if not self.access_key_id or not self.access_key_secret:
-            raise ValueError("阿里云AccessKey未配置，请设置环境变量NLP_AK_ENV和NLP_SK_ENV")
+        self.api_manager = get_aliyun_api_manager()
+        if not self.api_manager:
+            raise ValueError("阿里云API配置缺失，请设置 ALIYUN_ACCESS_KEY_ID 和 ALIYUN_ACCESS_KEY_SECRET")
     
     def analyze_text(self, text: str) -> Dict[str, Union[str, float]]:
         """分析文本情感"""
-        try:
-            # 优先使用SDK
-            return self._analyze_with_sdk(text)
-        except Exception as e:
-            logger.warning(f"SDK分析失败，尝试HTTP请求: {e}")
-            try:
-                return self._analyze_with_http(text)
-            except Exception as e2:
-                logger.error(f"HTTP请求也失败: {e2}")
-                # 返回默认结果
-                return {
-                    'sentiment': 'neutral',
-                    'score': 0.0,
-                    'confidence': 0.0,
-                    'error': f"API连接失败: {e2}",
-                    'method': 'aliyun'
-                }
-    
-    def _analyze_with_sdk(self, text: str) -> Dict[str, Union[str, float]]:
-        """使用SDK分析"""
-        try:
-            from aliyunsdkcore.client import AcsClient
-            from aliyunsdkcore.request import CommonRequest
-            
-            # 创建AcsClient实例
-            client = AcsClient(
-                self.access_key_id,
-                self.access_key_secret,
-                self.region_id
-            )
-            
-            # 使用CommonRequest
-            request = CommonRequest()
-            request.set_domain('alinlp.cn-hangzhou.aliyuncs.com')
-            request.set_version('2020-06-29')
-            request.set_action_name('GetSaChGeneral')
-            request.add_query_param('ServiceCode', 'alinlp')
-            request.add_query_param('Text', text)
-            
-            # 发送请求
-            response = client.do_action_with_exception(request)
-            result = json.loads(response)
-            try:
-                rid = result.get('RequestId') or result.get('RequestID')
-                logger.info(f"[Aliyun SA SDK] RequestId={rid}")
-            except Exception:
-                pass
-            
-            return self._parse_response(result)
-            
-        except ImportError:
-            raise Exception("阿里云SDK未安装，请运行: pip install aliyun-python-sdk-core")
-        except Exception as e:
-            raise e
-    
-    def _analyze_with_http(self, text: str) -> Dict[str, Union[str, float]]:
-        """使用HTTP请求分析"""
-        import requests
-        
-        params = {
-            'Action': 'SentimentAnalysis',
-            'Version': '2018-04-08',
-            'Format': 'JSON',
-            'Timestamp': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'SignatureMethod': 'HMAC-SHA1',
-            'SignatureVersion': '1.0',
-            'SignatureNonce': str(int(time.time() * 1000)),
-            'AccessKeyId': self.access_key_id,
-            'Text': text,
-        }
-        
-        # 生成签名
-        signature = self._generate_signature('POST', '/', params)
-        params['Signature'] = signature
+        if not text or not text.strip():
+            return {'sentiment': 'neutral', 'score': 0.0, 'confidence': 0.0}
         
         try:
-            response = requests.post(self.endpoint, data=params, timeout=30)
-            response.raise_for_status()
-            result = response.json()
-            try:
-                rid = result.get('RequestId') or result.get('RequestID')
-                logger.info(f"[Aliyun SA HTTP] RequestId={rid}")
-            except Exception:
-                pass
-            return self._parse_response(result)
-        except Exception as e:
-            raise e
-    
-    def _generate_signature(self, method: str, path: str, params: Dict) -> str:
-        """生成签名"""
-        canonicalized_query_string = "&".join([f"{k}={v}" for k, v in sorted(params.items())])
-        string_to_sign = f"{method}\n{path}\n{canonicalized_query_string}\n"
-        
-        signature = hmac.new(
-            self.access_key_secret.encode('utf-8'),
-            string_to_sign.encode('utf-8'),
-            hashlib.sha1
-        ).digest()
-        
-        return base64.b64encode(signature).decode('utf-8')
-    
-    def _parse_response(self, result: Dict) -> Dict[str, Union[str, float]]:
-        """解析响应"""
-        try:
-            # 解析Data字段
-            data_str = result.get('Data', '{}')
-            if isinstance(data_str, str):
-                data = json.loads(data_str)
-            else:
-                data = data_str
-            
-            # 获取结果
-            result_data = data.get('result', {})
-            sentiment_zh = result_data.get('sentiment', '')
-            positive_prob = float(result_data.get('positive_prob', 0))
-            negative_prob = float(result_data.get('negative_prob', 0))
-            neutral_prob = float(result_data.get('neutral_prob', 0))
-            
-            # 映射情感
-            sentiment_map = {
-                'positive': 'positive', 'negative': 'negative', 'neutral': 'neutral',
-                '正向': 'positive', '负向': 'negative', '中性': 'neutral',
-                '正面': 'positive', '负面': 'negative',
-            }
-            
-            sentiment = sentiment_map.get(sentiment_zh.lower(), 'neutral')
-            
-            # 计算分数和置信度
-            if sentiment == 'positive':
-                score = positive_prob
-                confidence = positive_prob
-            elif sentiment == 'negative':
-                score = -negative_prob
-                confidence = negative_prob
-            else:
-                score = 0.0
-                confidence = neutral_prob
-            
+            result = self.api_manager.analyze_sentiment(text)
             return {
-                'sentiment': sentiment,
-                'score': score,
-                'confidence': confidence,
-                'positive_prob': positive_prob,
-                'negative_prob': negative_prob,
-                'neutral_prob': neutral_prob,
+                'sentiment': result['sentiment'],
+                'score': result['score'],
+                'confidence': result['confidence'],
                 'method': 'aliyun'
             }
         except Exception as e:
-            raise e
+            logger.error(f"阿里云情感分析失败: {e}")
+            return {
+                'sentiment': 'neutral',
+                'score': 0.0,
+                'confidence': 0.0,
+                'error': str(e),
+                'method': 'aliyun'
+            }
 
 class SentimentAnalyzer:
     """统一情感分析器"""

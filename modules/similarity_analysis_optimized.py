@@ -36,68 +36,23 @@ plt.rcParams['axes.unicode_minus'] = False
 warnings.filterwarnings('ignore')
 
 
+from text_analysis.core.aliyun_api_manager import get_aliyun_api_manager, is_aliyun_api_available
+
 class AliyunTextVectorClient:
     """阿里云词向量API客户端"""
     
-    def __init__(self, access_key_id: str, access_key_secret: str):
-        self.access_key_id = access_key_id
-        self.access_key_secret = access_key_secret
-        self.endpoint = "https://alinlp.cn-hangzhou.aliyuncs.com"
-        self.service_code = "alinlp"
+    def __init__(self, access_key_id: str = None, access_key_secret: str = None):
+        self.api_manager = get_aliyun_api_manager()
+        if not self.api_manager:
+            raise ValueError("阿里云API配置缺失，请设置 ALIYUN_ACCESS_KEY_ID 和 ALIYUN_ACCESS_KEY_SECRET")
         
     def get_text_vector(self, text: str) -> List[float]:
         """获取文本向量 - 使用阿里云词向量API"""
         try:
-            # 尝试使用阿里云SDK
-            try:
-                from aliyunsdkcore.client import AcsClient
-                from aliyunsdkcore.request import CommonRequest
-                
-                # 创建AcsClient实例
-                client = AcsClient(
-                    self.access_key_id,
-                    self.access_key_secret,
-                    'cn-hangzhou'
-                )
-                
-                # 使用CommonRequest
-                request = CommonRequest()
-                request.set_domain('alinlp.cn-hangzhou.aliyuncs.com')
-                request.set_version('2020-06-29')
-                request.set_action_name('GetWeChGeneral')
-                request.add_query_param('ServiceCode', 'alinlp')
-                request.add_query_param('Text', text)
-                request.add_query_param('Size', '100')
-                request.add_query_param('Type', 'word')
-                request.add_query_param('Operation', 'average')
-                
-                # 发送请求
-                response = client.do_action_with_exception(request)
-                result = json.loads(response)
-                
-                # 解析返回结果
-                if "Data" in result:
-                    data_content = result["Data"]
-                    if isinstance(data_content, str):
-                        data_content = json.loads(data_content)
-                    
-                    if "result" in data_content and data_content["result"]:
-                        if isinstance(data_content["result"], dict) and "vec" in data_content["result"]:
-                            return data_content["result"]["vec"]
-                        elif isinstance(data_content["result"], list):
-                            vectors = [item["vec"] for item in data_content["result"] if "vec" in item]
-                            if vectors:
-                                import numpy as np
-                                return np.mean(vectors, axis=0).tolist()
-                
-                raise Exception(f"API返回数据格式异常: {result}")
-                
-            except ImportError:
-                raise Exception("阿里云SDK未安装，请运行: pip install aliyun-python-sdk-core")
-            except Exception as e:
-                raise e
-                
+            return self.api_manager.get_text_vector(text)
         except Exception as e:
+            print(f"获取文本向量失败: {e}")
+            return []
             error_msg = str(e)
             if "400" in error_msg:
                 if "BasicServiceNotActivated" in error_msg:

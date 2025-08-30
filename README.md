@@ -1,266 +1,236 @@
-# 文本分析模块 - 从众心理对网络暴力影响研究
+# 文本分析模块
 
-## 项目概述
+## 📋 项目概述
 
-本项目基于网络评论数据，深入研究从众心理对网络暴力形成的影响因素。通过多维度文本分析技术，识别和分析网络评论中的从众行为模式，为理解网络暴力形成机制提供数据支撑和理论依据。
+文本分析模块是一个功能完整的抖音评论分析工具，支持数据清洗、情感分析、相似度分析、时间分析和点赞分析等功能。该模块采用统一的API调用规范，支持本地处理和阿里云API两种模式。
 
-### 研究背景
-- **网络暴力现象**：社交媒体平台上的群体性攻击、恶意评论等现象日益严重
-- **从众心理作用**：个体在群体压力下容易产生从众行为，加剧网络暴力
-- **数据驱动分析**：基于大规模评论数据，量化分析从众心理的影响机制
-
-### 研究目标
-1. **识别从众行为**：通过时间、情感、相似度等多维度分析识别从众评论
-2. **量化影响因子**：分析点赞、时间窗口、情感倾向等因素对从众行为的影响
-3. **预测暴力倾向**：建立模型预测评论的暴力倾向和传播风险
-4. **提供干预建议**：基于分析结果提出网络暴力预防和干预策略
-
-## 项目结构
+## 🏗️ 项目结构
 
 ```
 text_analysis/
-├── README.md                    # 项目说明文档
-├── text_analysis_unified.py     # 统一入口脚本
-├── utils.py                     # 工具函数
-├── env.example                  # 环境变量示例
-├── core/                        # 核心模块
-│   ├── __init__.py
-│   ├── base_analyzer.py         # 基础分析器
-│   └── data_paths.py           # 数据路径管理
-├── modules/                     # 分析模块
-│   ├── __init__.py
-│   ├── data_cleaning_optimized.py      # 数据清洗
-│   ├── time_analysis_optimized.py      # 时间分析
-│   ├── like_analysis_optimized.py      # 点赞分析
-│   ├── sentiment_analyzer_optimized.py # 情感分析
-│   └── similarity_analysis_optimized.py # 相似度分析
-└── docs/                        # 文档目录
-    ├── 从众心理分析-技术文档与CLI参数说明.md
-    └── 文本分析-统一使用与参数指南.md
+├── core/                           # 核心功能模块
+│   ├── __init__.py                 # 核心模块初始化
+│   ├── base_analyzer.py            # 基础分析器
+│   ├── data_paths.py               # 路径管理
+│   ├── aliyun_api_manager.py      # 阿里云API统一管理器
+│   ├── env.example                 # 环境变量示例
+│   └── .env                        # API配置文件
+├── modules/                        # 分析功能模块
+│   ├── __init__.py                 # 模块初始化
+│   ├── data_cleaning_optimized.py  # 数据清洗模块
+│   ├── sentiment_analyzer_optimized.py  # 情感分析模块
+│   ├── similarity_analysis_optimized.py # 相似度分析模块
+│   ├── time_analysis_optimized.py  # 时间分析模块
+│   ├── like_analysis_optimized.py  # 点赞分析模块
+│   └── hit_stopwords.txt           # 停用词文件
+├── docs/                           # 文档目录
+├── text_analysis_unified.py        # 统一入口点
+├── utils.py                        # 工具函数
+└── README.md                       # 项目说明文档
 ```
 
-## 功能模块
+## 🚀 核心功能
 
-### 1. 数据清洗模块 (cleaning)
-**功能**：对原始评论数据进行预处理和清洗
-- **垃圾评论过滤**：移除广告、重复、无意义内容
-- **文本标准化**：统一格式、去除特殊字符
-- **数据去重**：基于内容和用户信息去重
-- **质量评估**：计算评论质量分数
+### 1. 数据清洗模块 (`data_cleaning_optimized.py`)
+- **功能**: 清洗和预处理抖音评论数据
+- **分词模式**: 支持本地分词(jieba)和阿里云API分词
+- **清洗规则**: 垃圾评论过滤、文本清洗、停用词过滤
+- **输出格式**: JSON、CSV、可视化图表
 
-**输出**：
-- 清洗后的结构化数据
-- 清洗统计报告
-- 数据质量可视化
+### 2. 情感分析模块 (`sentiment_analyzer_optimized.py`)
+- **功能**: 分析评论情感倾向
+- **分析模式**: 本地词典分析和阿里云API分析
+- **情感分类**: 正面、负面、中性
+- **并发处理**: 支持批量并发分析
 
-### 2. 时间分析模块 (time)
-**功能**：分析评论时间分布和从众时间窗口
-- **时间差计算**：分析父子评论时间间隔
-- **时间窗口检测**：识别高密度评论时段
-- **从众窗口识别**：检测可能触发从众行为的时间窗口
-- **时间模式分析**：分析评论发布的时间规律
+### 3. 相似度分析模块 (`similarity_analysis_optimized.py`)
+- **功能**: 分析评论间的相似度，识别模仿性评论
+- **技术**: 基于阿里云文本向量API
+- **应用**: 从众心理分析、内容重复检测
+- **输出**: 相似度矩阵、模仿性评论列表
 
-**输出**：
-- 时间分布统计
-- 从众窗口识别结果
-- 时间模式可视化图表
+### 4. 时间分析模块 (`time_analysis_optimized.py`)
+- **功能**: 分析评论时间分布和集中度
+- **指标**: 时间集中度、评论时间间隔
+- **可视化**: 时间分布图表
 
-### 3. 点赞分析模块 (like)
-**功能**：分析点赞行为和社会认同信号
-- **点赞分布分析**：统计点赞数量分布
-- **意见领袖识别**：基于点赞和回复速度识别关键用户
-- **社会认同分析**：分析点赞对从众行为的影响
-- **影响力评估**：评估用户评论的影响力
+### 5. 点赞分析模块 (`like_analysis_optimized.py`)
+- **功能**: 分析点赞互动模式
+- **指标**: 点赞分布、互动热度
+- **应用**: 内容质量评估
 
-**输出**：
-- 点赞分布统计
-- 意见领袖列表
-- 社会认同分析报告
+## 🔧 统一API管理器
 
-### 4. 情感分析模块 (sentiment)
-**功能**：分析评论情感倾向和情绪传播
-- **情感分类**：将评论分为正面、负面、中性
-- **情绪强度分析**：量化情感强度
-- **情绪传播分析**：分析负面情绪的传播模式
-- **暴力倾向识别**：识别具有暴力倾向的评论
+### 阿里云API统一管理器 (`core/aliyun_api_manager.py`)
 
-**支持方式**：
-- **本地词典**：基于情感词典的快速分析
-- **阿里云API**：高精度的云端情感分析
+**支持的API**:
+- 中文分词（基础版）- `GetWsChGeneral`
+- 情感分析（基础版）- `GetSaChGeneral`
+- 文本向量（基础版）- `GetWeChGeneral`
 
-**输出**：
-- 情感分布统计
-- 情绪传播分析
-- 暴力倾向评估报告
-
-### 5. 相似度分析模块 (similarity)
-**功能**：分析评论内容相似度和模仿行为
-- **文本向量化**：将文本转换为数值向量
-- **相似度计算**：使用余弦相似度计算文本相似性
-- **模仿评论识别**：识别内容相似的评论
-- **从众行为量化**：量化从众行为的程度
-
-**支持方式**：
-- **阿里云词向量**：高精度的语义向量化
-- **TF-IDF向量**：基于词频的本地向量化
-
-**输出**：
-- 相似度矩阵
-- 模仿评论列表
-- 从众行为量化报告
-
-## 技术特点
-
-### 1. 多维度分析
-- **时间维度**：分析评论发布的时间规律和从众窗口
-- **情感维度**：分析情感倾向和情绪传播
-- **内容维度**：分析文本相似度和模仿行为
-- **社交维度**：分析点赞、回复等社交信号
-
-### 2. 高性能处理
-- **并发处理**：支持多线程并发API调用
-- **批量处理**：批量处理大量评论数据
-- **缓存机制**：智能缓存减少重复计算
-- **内存优化**：优化大数据集的内存使用
-
-### 3. 灵活配置
-- **模块化设计**：各模块独立运行，支持组合使用
-- **参数可调**：支持调整分析参数和阈值
-- **多数据源**：支持数据库和文件数据源
-- **批量模式**：支持按视频ID批量处理
-
-### 4. 可视化输出
-- **统计图表**：生成直观的数据可视化
-- **分析报告**：详细的JSON格式分析报告
-- **结果导出**：支持CSV、JSON等多种格式
-
-## 安装和使用
-
-### 环境要求
-- Python 3.8+
-- MySQL数据库
-- 阿里云NLP服务（可选）
-
-### 安装步骤
-1. **激活虚拟环境**
-   ```bash
-   # Windows
-   venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   ```
-
-2. **安装依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **配置环境变量**
-   ```bash
-   cp env.example .env
-   # 编辑.env文件，填入数据库和API配置
-   ```
-
-### 基本使用
-
-#### 1. 统一入口使用
+**环境变量配置**:
 ```bash
-# 数据清洗
-python text_analysis/text_analysis_unified.py cleaning --video-id 7306437681045654834
-
-# 时间分析（使用清洗数据）
-python text_analysis/text_analysis_unified.py time --use-cleaned-data --video-id 7306437681045654834
-
-# 情感分析（阿里云API）
-python text_analysis/text_analysis_unified.py sentiment --type aliyun --video-id 7306437681045654834
-
-# 相似度分析（阿里云API）
-python text_analysis/text_analysis_unified.py similarity --video-id 7306437681045654834
+# 阿里云API配置
+NLP_AK_ENV=your_access_key_id_here
+NLP_SK_ENV=your_access_key_secret_here
+NLP_REGION_ENV=cn-hangzhou
 ```
 
-#### 2. 批量处理模式
+**主要功能**:
+- 统一的API调用接口
+- 自动环境变量加载
+- 错误处理和重试机制
+- 请求日志记录
+- 批量处理支持
+
+## 📖 使用指南
+
+### 1. 环境配置
+
 ```bash
-# 不指定video-id时，自动处理所有视频
-python text_analysis/text_analysis_unified.py cleaning
-python text_analysis/text_analysis_unified.py time --use-cleaned-data
+# 复制环境变量示例文件
+cp text_analysis/core/.env.example text_analysis/core/.env
+
+# 编辑配置文件，填入阿里云API密钥
+NLP_AK_ENV=your_access_key_id_here
+NLP_SK_ENV=your_access_key_secret_here
+NLP_REGION_ENV=cn-hangzhou
 ```
 
-#### 3. 性能优化参数
+### 2. 数据清洗
+
 ```bash
-# 情感分析并发优化
-python text_analysis/text_analysis_unified.py sentiment \
-  --type aliyun \
-  --sa-concurrency 8 \
-  --sa-batch-size 100 \
-  --video-id 7306437681045654834
+# 本地分词模式（默认）
+python text_analysis/modules/data_cleaning_optimized.py --video-id 7306437681045654834 --limit 100
 
-# 相似度分析并发优化
-python text_analysis/text_analysis_unified.py similarity \
-  --vector-concurrency 8 \
-  --vector-batch-size 100 \
-  --video-id 7306437681045654834
+# API分词模式
+python text_analysis/modules/data_cleaning_optimized.py --video-id 7306437681045654834 --limit 100 --segment-mode api
 ```
 
-## 输出文件说明
+### 3. 情感分析
 
-### 文件命名规范
-- `processed_cleaning_{video_id}_{timestamp}.json` - 清洗后的数据
-- `results_{module}_{video_id}_{timestamp}.csv/json` - 分析结果
-- `reports_{module}_{video_id}_{timestamp}.json` - 分析报告
-- `visualizations_{module}_{video_id}_{timestamp}.png` - 可视化图表
+```bash
+# 本地词典分析
+python text_analysis/modules/sentiment_analyzer_optimized.py --video-id 7306437681045654834 --limit 100 --type local
 
-### 输出目录结构
+# 阿里云API分析
+python text_analysis/modules/sentiment_analyzer_optimized.py --video-id 7306437681045654834 --limit 100 --type aliyun
+```
+
+### 4. 相似度分析
+
+```bash
+python text_analysis/modules/similarity_analysis_optimized.py --video-id 7306437681045654834 --limit 100
+```
+
+### 5. 统一入口
+
+```bash
+# 使用统一入口点
+python text_analysis/text_analysis_unified.py cleaning --video-id 7306437681045654834 --limit 100
+python text_analysis/text_analysis_unified.py sentiment --video-id 7306437681045654834 --limit 100 --type aliyun
+python text_analysis/text_analysis_unified.py similarity --video-id 7306437681045654834 --limit 100
+```
+
+## 🔍 API调用测试
+
+### 测试API可用性
+```python
+from text_analysis.core.aliyun_api_manager import is_aliyun_api_available
+print('API可用性:', is_aliyun_api_available())
+```
+
+### 测试分词功能
+```python
+from text_analysis.core.aliyun_api_manager import get_aliyun_api_manager
+manager = get_aliyun_api_manager()
+words = manager.segment_text("这是一个测试文本")
+print('分词结果:', words)
+```
+
+### 测试情感分析
+```python
+sentiment = manager.analyze_sentiment("这个视频很棒！")
+print('情感分析:', sentiment)
+```
+
+### 测试文本向量
+```python
+vector = manager.get_text_vector("这是一个测试文本")
+print('向量维度:', len(vector))
+```
+
+## 📊 输出结果
+
+所有分析模块都会生成以下输出：
+
+1. **数据文件**: JSON、CSV格式的分析结果
+2. **分析报告**: 详细的统计报告
+3. **可视化图表**: 图表和可视化结果
+4. **日志记录**: 详细的执行日志
+
+输出目录结构：
 ```
 data/
-├── processed/          # 清洗后的数据
-├── results/           # 分析结果
-├── reports/           # 分析报告
-└── visualizations/    # 可视化图表
+├── processed/      # 清洗后的数据
+├── results/        # 分析结果
+├── reports/        # 分析报告
+└── visualizations/ # 可视化图表
 ```
 
-## 研究应用
+## 🛠️ 技术特点
 
-### 1. 网络暴力预防
-- **早期预警**：识别可能引发网络暴力的事件和评论
-- **风险评估**：评估评论的暴力倾向和传播风险
-- **干预策略**：基于分析结果制定干预措施
+### 代码优化
+- ✅ **统一API调用**: 所有模块使用统一的API管理器
+- ✅ **代码去冗余**: 删除了重复的比较和可视化工具
+- ✅ **模块化设计**: 清晰的模块分离和职责划分
+- ✅ **错误处理**: 完善的异常处理和回退机制
 
-### 2. 平台治理
-- **内容审核**：辅助平台内容审核和违规检测
-- **用户管理**：识别恶意用户和意见领袖
-- **算法优化**：优化推荐算法，减少负面内容传播
+### 性能优化
+- ✅ **并发处理**: 支持批量并发API调用
+- ✅ **缓存机制**: 避免重复API调用
+- ✅ **限流控制**: 防止API调用频率过高
+- ✅ **资源管理**: 自动释放数据库连接
 
-### 3. 学术研究
-- **行为模式**：研究网络从众行为的形成机制
-- **传播规律**：分析负面情绪的传播规律
-- **影响因素**：量化各种因素对从众行为的影响
+### 用户体验
+- ✅ **灵活配置**: 支持多种环境变量配置方式
+- ✅ **详细日志**: 完整的执行日志和错误信息
+- ✅ **进度显示**: 实时显示处理进度
+- ✅ **结果可视化**: 丰富的图表和可视化输出
 
-## 技术文档
+## 🔧 开发指南
 
-详细的技术文档和API说明请参考：
-- [从众心理分析-技术文档与CLI参数说明](docs/从众心理分析-技术文档与CLI参数说明.md)
-- [文本分析-统一使用与参数指南](docs/文本分析-统一使用与参数指南.md)
-- [项目完整文档](docs/README_项目完整文档.md)
+### 添加新的分析模块
 
-## 贡献指南
+1. 继承 `BaseAnalyzer` 类
+2. 实现 `analyze()` 方法
+3. 在 `modules/__init__.py` 中注册模块
+4. 更新统一入口点
 
-欢迎提交Issue和Pull Request来改进项目：
-1. Fork项目
-2. 创建功能分支
-3. 提交更改
-4. 发起Pull Request
+### 扩展API功能
 
-## 许可证
+1. 在 `AliyunAPIManager` 中添加新的API方法
+2. 更新环境变量配置
+3. 添加相应的错误处理
+4. 更新文档说明
 
-本项目采用MIT许可证，详见LICENSE文件。
+## 📝 更新日志
 
-## 联系方式
+### v2.0.0 (2025-08-30)
+- ✅ 重构API调用架构，统一使用 `AliyunAPIManager`
+- ✅ 优化代码结构，删除冗余文件
+- ✅ 改进环境变量配置管理
+- ✅ 增强错误处理和日志记录
+- ✅ 完善文档和使用指南
 
-如有问题或建议，请通过以下方式联系：
-- 提交GitHub Issue
-- 发送邮件至项目维护者
+### v1.0.0
+- 初始版本发布
+- 基础分析功能实现
 
----
+## 🤝 贡献指南
 
-*本项目致力于通过数据科学方法理解和预防网络暴力，为构建更健康的网络环境贡献力量。*
+欢迎提交Issue和Pull Request来改进项目！
+
+## �� 许可证
+
+本项目采用MIT许可证。
