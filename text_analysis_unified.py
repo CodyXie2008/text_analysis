@@ -221,7 +221,7 @@ def run_conformity_analysis(args):
             else:
                 # 查找清洗后的数据文件
                 import glob
-                cleaned_files = glob.glob("modules/data/cleaned/*_cleaned.json")
+                cleaned_files = glob.glob("data/cleaned/*_cleaned.json")
                 if not cleaned_files:
                     print("❌ 未找到清洗后的数据文件")
                     return
@@ -271,7 +271,7 @@ def run_conformity_analysis(args):
         # 保存结果
         if not args.no_save:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"modules/data/comprehensive_conformity_analysis_{timestamp}.json"
+            output_file = f"data/comprehensive_conformity_analysis_{timestamp}.json"
             
             # 转换NumPy类型为Python原生类型
             converted_result = convert_numpy_types(comprehensive_result)
@@ -305,7 +305,7 @@ def run_sentiment_analysis(args):
                 data_path = args.cleaned_data_path
             else:
                 import glob
-                cleaned_files = glob.glob("modules/data/cleaned/*_cleaned.json")
+                cleaned_files = glob.glob("data/cleaned/*_cleaned.json")
                 if not cleaned_files:
                     print("❌ 未找到清洗后的数据文件")
                     return
@@ -327,10 +327,10 @@ def run_sentiment_analysis(args):
         # 保存结果
         if not args.no_save:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"modules/data/sentiment_conformity_analysis_{timestamp}.json"
+            output_file = f"data/sentiment_conformity_analysis_{timestamp}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+                json.dump(convert_numpy_types(result), f, ensure_ascii=False, indent=2)
             
             print(f"💾 情感从众心理分析结果已保存: {output_file}")
         
@@ -355,7 +355,7 @@ def run_time_analysis(args):
                 data_path = args.cleaned_data_path
             else:
                 import glob
-                cleaned_files = glob.glob("modules/data/cleaned/*_cleaned.json")
+                cleaned_files = glob.glob("data/cleaned/*_cleaned.json")
                 if not cleaned_files:
                     print("❌ 未找到清洗后的数据文件")
                     return
@@ -377,10 +377,10 @@ def run_time_analysis(args):
         # 保存结果
         if not args.no_save:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"modules/data/time_conformity_analysis_{timestamp}.json"
+            output_file = f"data/time_conformity_analysis_{timestamp}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+                json.dump(convert_numpy_types(result), f, ensure_ascii=False, indent=2)
             
             print(f"💾 时间从众心理分析结果已保存: {output_file}")
         
@@ -405,7 +405,7 @@ def run_like_analysis(args):
                 data_path = args.cleaned_data_path
             else:
                 import glob
-                cleaned_files = glob.glob("modules/data/cleaned/*_cleaned.json")
+                cleaned_files = glob.glob("data/cleaned/*_cleaned.json")
                 if not cleaned_files:
                     print("❌ 未找到清洗后的数据文件")
                     return
@@ -427,10 +427,10 @@ def run_like_analysis(args):
         # 保存结果
         if not args.no_save:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"modules/data/like_conformity_analysis_{timestamp}.json"
+            output_file = f"data/like_conformity_analysis_{timestamp}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+                json.dump(convert_numpy_types(result), f, ensure_ascii=False, indent=2)
             
             print(f"💾 点赞从众心理分析结果已保存: {output_file}")
         
@@ -483,7 +483,7 @@ def run_similarity_analysis(args):
                 data_path = args.cleaned_data_path
             else:
                 import glob
-                cleaned_files = glob.glob("modules/data/cleaned/*_cleaned.json")
+                cleaned_files = glob.glob("data/cleaned/*_cleaned.json")
                 if not cleaned_files:
                     print("❌ 未找到清洗后的数据文件")
                     return
@@ -505,10 +505,10 @@ def run_similarity_analysis(args):
         # 保存结果
         if not args.no_save:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_file = f"modules/data/similarity_conformity_analysis_{timestamp}.json"
+            output_file = f"data/similarity_conformity_analysis_{timestamp}.json"
             
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=2)
+                json.dump(convert_numpy_types(result), f, ensure_ascii=False, indent=2)
             
             print(f"💾 相似度从众心理分析结果已保存: {output_file}")
         

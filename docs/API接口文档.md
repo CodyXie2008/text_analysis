@@ -50,7 +50,7 @@ python text_analysis_unified.py conformity --use-cleaned-data --video-id 7306437
 python text_analysis_unified.py conformity --use-cleaned-data --test
 
 # 指定数据文件
-python text_analysis_unified.py conformity --cleaned-data-path modules/data/cleaned/parent_7306470754056569635_cleaned.json
+python text_analysis_unified.py conformity --cleaned-data-path data/cleaned/parent_7306470754056569635_cleaned.json
 ```
 
 #### 返回数据格式
@@ -329,7 +329,7 @@ python text_analysis_unified.py conformity --cleaned-data-path modules/data/clea
 | `--video-id` | str | 是 | None | 视频ID |
 | `--limit` | int | 否 | None | 限制处理数量 |
 | `--segment-mode` | str | 否 | local | 分词模式：local/api |
-| `--output-dir` | str | 否 | modules/data/cleaned | 输出目录 |
+| `--output-dir` | str | 否 | data/cleaned | 输出目录 |
 | `--test` | flag | 否 | False | 测试模式 |
 
 #### 使用示例
