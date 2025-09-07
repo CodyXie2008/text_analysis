@@ -18,3 +18,7 @@ docs/_build/
 *.log
 *.out
 *.pyc
+
+# Ignore data directories
+modules/data/
+data/

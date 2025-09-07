@@ -6,19 +6,21 @@
 """
 
 # 核心分析模块
-from .sentiment_analyzer_optimized import SentimentAnalyzer
-from .time_analysis_optimized import TimeAnalysisAnalyzer
-from .like_analysis_optimized import LikeAnalysisAnalyzer
+from .sentiment_conformity_analyzer import SentimentConformityAnalyzer
+from .similarity_conformity_analyzer import SimilarityConformityAnalyzer
+from .conformity_time_analyzer import ConformityTimeAnalyzer
+from .like_conformity_analyzer import LikeConformityAnalyzer
 from .data_cleaning_optimized import DataCleaningAnalyzer
 
 # API管理器
-from ..core.aliyun_api_manager import AliyunAPIManager, get_aliyun_api_manager, is_aliyun_api_available
+from core.aliyun_api_manager import AliyunAPIManager, get_aliyun_api_manager, is_aliyun_api_available
 
 __all__ = [
     # 核心分析模块
-    'SentimentAnalyzer',
-    'TimeAnalysisAnalyzer', 
-    'LikeAnalysisAnalyzer',
+    'SentimentConformityAnalyzer',
+    'SimilarityConformityAnalyzer',
+    'ConformityTimeAnalyzer', 
+    'LikeConformityAnalyzer',
     'DataCleaningAnalyzer',
     # API管理器
     'AliyunAPIManager',

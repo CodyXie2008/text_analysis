@@ -258,8 +258,12 @@ class DataCleaningAnalyzer(BaseAnalyzer):
         print("4. 分词处理...")
         df_processed = self._add_word_segments(df_cleaned)
         
-        # 5. 保存清洗后的数据
-        print("5. 保存清洗数据...")
+        # 5. 时间标准化处理
+        print("5. 时间标准化处理...")
+        df_processed = self._add_time_standardization(df_processed)
+        
+        # 6. 保存清洗后的数据
+        print("6. 保存清洗数据...")
         cleaned_data_path = self.path_manager.get_cleaned_data_path()
         self._save_cleaned_data(df_processed, cleaned_data_path)
         
@@ -327,6 +331,16 @@ class DataCleaningAnalyzer(BaseAnalyzer):
         """清洗和处理数据"""
         df_cleaned = df.copy()
         
+        # 检查数据是否为空
+        if len(df_cleaned) == 0:
+            print(f"   - 输入数据为空，跳过处理")
+            return df_cleaned
+        
+        # 检查必要字段
+        if 'content' not in df_cleaned.columns:
+            print(f"   - 警告: 缺少content字段，跳过文本清洗")
+            return df_cleaned
+        
         # 文本清洗
         df_cleaned['content_cleaned'] = df_cleaned['content'].apply(self.clean_text)
         
@@ -338,6 +352,17 @@ class DataCleaningAnalyzer(BaseAnalyzer):
         df_cleaned = df_cleaned.drop('content_cleaned', axis=1)
         
         print(f"   - 清洗后保留: {len(df_cleaned)} 条")
+        
+        # 如果清洗后没有数据，直接返回
+        if len(df_cleaned) == 0:
+            print(f"   - 清洗后无有效数据")
+            return df_cleaned
+        
+        # 添加分词
+        df_cleaned = self._add_word_segments(df_cleaned)
+        
+        # 添加时间标准化
+        df_cleaned = self._add_time_standardization(df_cleaned)
         
         return df_cleaned
     
@@ -356,14 +381,90 @@ class DataCleaningAnalyzer(BaseAnalyzer):
         
         return df_processed
     
+    def _add_time_standardization(self, df: pd.DataFrame) -> pd.DataFrame:
+        """添加时间标准化处理，为从众心理时间分析做准备"""
+        df_processed = df.copy()
+        
+        # 1. 时间标准化：Unix时间戳转datetime
+        if 'create_time' in df_processed.columns:
+            df_processed['comment_time'] = pd.to_datetime(df_processed['create_time'], unit='s')
+            print(f"   - 时间标准化完成: {len(df_processed)} 条记录")
+        else:
+            print("   - 警告: 未找到create_time字段，跳过时间标准化")
+            return df_processed
+        
+        # 2. 按时间排序
+        df_processed = df_processed.sort_values('comment_time').reset_index(drop=True)
+        print(f"   - 按时间排序完成")
+        
+        # 3. 添加父评论标识
+        # 基于parent_comment_id字段判断父子关系
+        if 'parent_comment_id' in df_processed.columns:
+            # 父评论：parent_comment_id为空、0或NaN
+            parent_mask = (df_processed['parent_comment_id'].isna() | 
+                          (df_processed['parent_comment_id'] == '0') | 
+                          (df_processed['parent_comment_id'] == 0))
+            df_processed['is_parent'] = parent_mask
+        else:
+            # 如果没有parent_comment_id字段，假设第一条评论是父评论
+            df_processed['is_parent'] = False
+            df_processed.loc[0, 'is_parent'] = True
+            print("   - 警告: 未找到parent_comment_id字段，假设第一条评论为父评论")
+        
+        # 4. 统计父子评论数量
+        parent_count = df_processed['is_parent'].sum()
+        child_count = len(df_processed) - parent_count
+        print(f"   - 父评论数量: {parent_count}")
+        print(f"   - 子评论数量: {child_count}")
+        
+        # 5. 添加时间分析相关字段
+        if parent_count > 0:
+            # 计算每个子评论与父评论的时间差
+            parent_times = {}
+            for idx, row in df_processed.iterrows():
+                if row['is_parent']:
+                    parent_times[row['comment_id']] = row['comment_time']
+            
+            # 为每个子评论计算与对应父评论的时间差
+            time_diffs = []
+            for idx, row in df_processed.iterrows():
+                if row['is_parent']:
+                    time_diffs.append(0)  # 父评论的时间差为0
+                else:
+                    # 找到对应的父评论时间
+                    parent_time = None
+                    if 'parent_comment_id' in df_processed.columns:
+                        parent_id = row['parent_comment_id']
+                        if parent_id in parent_times:
+                            parent_time = parent_times[parent_id]
+                    
+                    if parent_time is not None:
+                        time_diff = abs((row['comment_time'] - parent_time).total_seconds())
+                        time_diffs.append(time_diff)
+                    else:
+                        time_diffs.append(0)  # 无法确定父评论时设为0
+            
+            df_processed['time_diff_seconds'] = time_diffs
+            print(f"   - 时间差计算完成")
+        else:
+            df_processed['time_diff_seconds'] = 0
+            print("   - 警告: 未找到父评论，时间差设为0")
+        
+        return df_processed
+    
     def _save_cleaned_data(self, df: pd.DataFrame, output_path: str):
         """保存清洗后的数据"""
         try:
             # 确保目录存在
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
+            # 处理时间字段，转换为字符串格式
+            df_to_save = df.copy()
+            if 'comment_time' in df_to_save.columns:
+                df_to_save['comment_time'] = df_to_save['comment_time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            
             # 转换为JSON格式保存
-            data = df.to_dict('records')
+            data = df_to_save.to_dict('records')
             with open(output_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             

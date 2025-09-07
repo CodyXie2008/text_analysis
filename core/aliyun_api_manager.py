@@ -228,8 +228,17 @@ class AliyunAPIManager:
             
             # 提取情感信息
             sentiment = sentiment_result.get('sentiment', 'neutral')
-            score = float(sentiment_result.get('score', 0.0))
-            confidence = float(sentiment_result.get('confidence', 0.0))
+            
+            # 阿里云API返回的是概率值，需要计算score和confidence
+            positive_prob = float(sentiment_result.get('positive_prob', 0.0))
+            negative_prob = float(sentiment_result.get('negative_prob', 0.0))
+            neutral_prob = float(sentiment_result.get('neutral_prob', 0.0))
+            
+            # 计算情感分数：正面概率 - 负面概率，范围[-1, 1]
+            score = positive_prob - negative_prob
+            
+            # 置信度取最大概率值
+            confidence = max(positive_prob, negative_prob, neutral_prob)
             
             logger.info(f"[AliyunSA] 情感分析成功: {sentiment} (score={score:.3f}, confidence={confidence:.3f})")
             
