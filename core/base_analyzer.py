@@ -21,7 +21,7 @@ sys.path.insert(0, project_root)
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from config.db_config import get_db_conn
+from text_analysis.core.db_config import get_db_conn
 from text_analysis.core.data_paths import AnalysisPathManager, PROJECT_ROOT, resolve_latest_cleaned_data
 
 # 使用PROJECT_ROOT作为项目根目录
@@ -215,7 +215,8 @@ class BaseAnalyzer:
     
     def run_analysis(self, limit: Optional[int] = None, use_cleaned_data: bool = False, 
                     cleaned_data_path: str = None, save_results: bool = True, 
-                    generate_report: bool = True, create_visualizations: bool = True):
+                    generate_report: bool = True, create_visualizations: bool = True, 
+                    strict_mode: bool = False):
         """
         运行完整的分析流程
         
@@ -226,6 +227,7 @@ class BaseAnalyzer:
             save_results: 是否保存结果
             generate_report: 是否生成报告
             create_visualizations: 是否创建可视化
+            strict_mode: 是否使用严格模式（主要用于数据清洗模块）
         """
         print(f"=== {self.module_name.title()} 分析开始 ===")
         
@@ -242,7 +244,8 @@ class BaseAnalyzer:
             
             # 执行分析
             start_time = datetime.now()
-            results = self.analyze(df)
+            # 传递strict_mode参数给analyze方法
+            results = self.analyze(df, strict_mode=strict_mode)
             end_time = datetime.now()
             results['duration'] = (end_time - start_time).total_seconds()
             

@@ -24,7 +24,7 @@ def _enumerate_aweme_ids_from_cleaned(cleaned_data_path: Optional[str]) -> List[
 
 def _enumerate_aweme_ids_from_db() -> List[str]:
     try:
-        from config.db_config import get_db_conn
+        from text_analysis.core.db_config import get_db_conn
         import pandas as pd
         conn = get_db_conn()
         df = pd.read_sql_query("SELECT DISTINCT aweme_id FROM douyin_aweme_comment WHERE aweme_id IS NOT NULL", conn)

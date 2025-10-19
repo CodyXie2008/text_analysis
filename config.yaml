@@ -1,0 +1,11 @@
+# 数据预处理模块配置文件
+text:
+  min_length: 5           # 最小内容长度限制
+  stopwords_path: "hit_stopwords.txt"  # 停用词表路径
+  jieba_dict: "userdict.txt"           # 用户词典路径
+
+filter:
+  stopwords: ["关注我", "点击", "链接", "广告", "代购", "加微信", "加qq"]  # 过滤词列表
+
+output:
+  json_path: "./data/processed"  # JSON输出路径

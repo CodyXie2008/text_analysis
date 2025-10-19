@@ -8,15 +8,15 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-# 获取项目根目录 - 指向MediaCrawler项目根目录
-PROJECT_ROOT = Path(__file__).parent.parent.parent
+# 获取项目根目录 - 指向text_analysis项目根目录
+PROJECT_ROOT = Path(__file__).parent.parent
 
 # 数据目录结构
 DATA_DIRS = {
     'raw': PROJECT_ROOT / 'data' / 'raw',                    # 原始数据
     'processed': PROJECT_ROOT / 'data' / 'processed',        # 处理后数据
     'results': PROJECT_ROOT / 'data' / 'results',            # 分析结果
-    'visualizations': PROJECT_ROOT / 'data' / 'visualizations', # 可视化图表
+    'visualizations': PROJECT_ROOT / 'data',                 # 可视化图表 - 直接保存到data根目录
     'reports': PROJECT_ROOT / 'data' / 'reports',            # 分析报告
     'temp': PROJECT_ROOT / 'data' / 'temp'                   # 临时文件
 }
@@ -88,7 +88,8 @@ class AnalysisPathManager:
         base_name = f"visualizations_{self.module_name}"
         if self.video_id:
             base_name = f"{base_name}_{self.video_id}"
-        return get_data_path('visualizations', f"{base_name}_{self.timestamp}.png")
+        # 直接保存到data目录
+        return str(PROJECT_ROOT / 'data' / f"{base_name}_{self.timestamp}.png")
     
     def get_cleaned_data_path(self) -> str:
         """获取清洗数据文件路径"""
@@ -204,4 +205,4 @@ def get_like_interaction_paths(video_id: str = None):
     return PathManager.get_like_analysis_paths(video_id)
 
 # 初始化时确保目录存在
-ensure_directories() 
+ensure_directories()
