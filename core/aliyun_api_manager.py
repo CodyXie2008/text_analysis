@@ -240,10 +240,14 @@ class AliyunAPIManager:
             # 置信度取最大概率值
             confidence = max(positive_prob, negative_prob, neutral_prob)
             
-            logger.info(f"[AliyunSA] 情感分析成功: {sentiment} (score={score:.3f}, confidence={confidence:.3f})")
+            logger.info(f"[AliyunSA] 情感分析成功: {sentiment} (positive_prob={positive_prob:.4f}, negative_prob={negative_prob:.4f}, score={score:.3f}, confidence={confidence:.3f})")
             
+            # 保留官方文档定义的原始字段，同时包含转换后的score和confidence
             return {
                 'sentiment': sentiment,
+                'positive_prob': positive_prob,
+                'negative_prob': negative_prob,
+                'neutral_prob': neutral_prob,
                 'score': score,
                 'confidence': confidence
             }

@@ -7,7 +7,7 @@
 
 import numpy as np
 import pandas as pd
-from normalization import (
+from algorithms.normalization import (
     MinMaxNormalizer,
     ZScoreNormalizer,
     RobustScaler,
